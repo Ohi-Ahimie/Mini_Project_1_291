@@ -471,6 +471,8 @@ def postRideRequest(rdate, email, pickup, dropoff, amount):
         cursor.execute("""SELECT DINSTINCT(r.rid) FROM members m, requests r WHERE ? = m.email;""", (email, ))
 
     cursor.execute("""INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?);""", (rid, email, rdate, pickup, dropoff, amount))
+
+    connection.commit()
     
 def main():
     global connection, cursor
