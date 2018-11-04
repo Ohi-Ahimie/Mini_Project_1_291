@@ -460,15 +460,12 @@ def postRideRequest(rdate, email, pickup, dropoff, amount):
     cursor.execute("""SELECT MAX(rid) FROM requests;""")
     rid = cursor.fetchone
 
+    # handles unique rid
     if rid is None:
         rid = 1
     else:
         rid = int(rid[0])
         rid += 1
-
-    # sets unique rid and makes sure that 
-    if rid is not None:
-        cursor.execute("""SELECT DINSTINCT(r.rid) FROM members m, requests r WHERE ? = m.email;""", (email, ))
 
     cursor.execute("""INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?);""", (rid, email, rdate, pickup, dropoff, amount))
 
