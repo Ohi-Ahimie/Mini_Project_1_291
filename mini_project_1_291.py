@@ -12,7 +12,7 @@ import hashlib
 connection = None
 cursor = None
 
-class InputError(Exception):
+class MismatchError(Exception):
     def __init__(self, message):
         self.message = message
         
@@ -292,12 +292,12 @@ def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enr
     
     # generate new ride number
     cursor.execute("SELECT MAX(rno) FROM rides;")
-    rno = cursor.fetchone()[0]
+    rno = cursor.fetchone() # done this way because can return None
     
     if rno is None:
         rno = 1
     else:
-        rno = int(rno)
+        rno = int(rno[0])
         rno += 1
 
     if cno is not None:
@@ -308,7 +308,7 @@ def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enr
             if l[0] is not None and l[0] is cno:
                 flag = True
         if flag is False:
-            raise InputError("Specified car number didn't match one of yours!")            
+            raise MismatchError("Specified car number didn't match one of yours!")            
 
     # rides(rno, price, rdate, seats, lugDesc, src, dst, driver, cno)
     cursor.execute("""INSERT INTO rides VALUES(?,?,?,?,?,?,?,?,?);
@@ -341,16 +341,16 @@ def findLoc(location):
     
     return retlist
 
-def rideSearch(keywords):
+def rideSearchFromKeyword(keywords):
     # keywords is a tuple
     global connection, cursor
     
     potentialMatches = []
     
     for kw in keywords:
-        cursor.execute("""SELECT * 
-                        FROM cars c, (SELECT r.rno, r.price, r.rdate, r.seats, r.lugDesc, r.src, r.dst, r.driver, r.cno
-                                    FROM rides r, locations 
+        cursor.execute("""SELECT c.cno, c.make, c.model, c.year, c.seats, c.owner, matching.rno, matching.price, matching.rdate, matching.seats, matching.lugDesc, matching.src, matching.dst, matching.driver, matching.cno, matching.lcode
+                        FROM cars c, (SELECT *
+                                    FROM rides r, locations l
                                     WHERE (lcode = r.src OR lcode = r.dst OR lcode IN(SELECT lcode 
                                                                                             FROM enroute
                                                                                             WHERE enroute.rno = r.rno)
@@ -358,27 +358,119 @@ def rideSearch(keywords):
                         WHERE matching.cno = c.cno""", (kw, "%"+kw+"%", "%"+kw+"%", "%"+kw+"%"))
                         
         potentialMatches.append(set(cursor.fetchall()))
+        
+#        cursor.execute("""SELECT r.rno, r.price, r.rdate, r.seats, r.lugDesc, r.src, r.dst, r.driver, r.cno, lcode
+#                          FROM rides r, locations 
+#                          WHERE lcode = r.src OR lcode = r.dst OR lcode IN(SELECT lcode 
+#                                                                            FROM enroute
+#                                                                            WHERE enroute.rno = r.rno); """)
+
+        cursor.execute("""SELECT *
+                        FROM rides, locations
+                        WHERE (lcode = src OR lcode = dst OR lcode IN(SELECT lcode
+                                                                       FROM enroute
+                                                                       WHERE enroute.rno = rides.rno))AND (lcode = ? OR city LIKE ? OR prov LIKE ? OR address LIKE ?) """, ('berta', '%berta%', '%berta%', '%berta%'))
+#        t = cursor.fetchall()
+#        for q in t:
+#            pass
+##            print(q)        
+#        
+#        print()
     
-    if potentialMatches is empty:
+    if not potentialMatches:
         return []
     
     finalSet = potentialMatches[0]
     for i in range(1, len(potentialMatches)):
-        finalSet = finalSet.intersect(potentialMatches[i])
+        finalSet = finalSet.intersection(potentialMatches[i])
         
     return list(finalSet)
 
+def findMatchingBookings(member):
+#    written by ohiwere
+    global connection, cursor
+    
+#    |bno|email|rno|cost|seats|pickup|dropoff|
+    cursor.execute("""SELECT bno, email, b.rno, b.cost, b.seats, pickup, dropoff
+                    FROM rides r, bookings b
+                    WHERE r.rno = b.rno AND driver = ?;""", (member,))
+    
+    return cursor.fetchall()
+
+def deleteBooking(bno):
+#    written by ohiwere
+    global connection, cursor
+    
+    cursor.execute(""" DELETE FROM bookings 
+                        WHERE bno = ?;
+                    """, (bno,))
+                    
+    connection.commit()
+
+def issueBooking(email, rno, cost, seats, pickup, dropoff):
+#    written by ohiwere
+    global connection, cursor
+#    |bno|email|rno|cost|seats|pickup|dropoff|
+
+    cursor.execute("""SELECT MAX(bno) FROM bookings;""")
+    
+    bno = cursor.fetchone()
+    
+    if bno is None:
+        bno = 1
+    else:
+        bno = int(bno[0]) + 1
+        
+    cursor.execute("""INSERT INTO bookings VALUES(?,?,?,?,?,?,?); """, (bno, email, rno, cost, seats, pickup, dropoff))
+    connection.commit()
+    
+
+def sendMessage(to, from_, message, rno):
+    # written by ohiwere
+    global connection, cursor
+    
+    # make sure that rno matches a ride offered by either sender or recipient
+    check1 = True
+    cursor.execute("""SELECT driver
+                    FROM rides
+                    WHERE rno = ? AND driver = ?;""", (rno, from_))
+    res = cursor.fetchone()
+    if res is None:
+        check1 = False
+    
+    check2 = True
+    cursor.execute("""SELECT driver
+                    FROM rides
+                    WHERE rno = ? AND driver = ? ;""", (rno, to))
+    res = cursor.fetchone()
+    if res is None:
+        check2 = False
+    
+    if (check1 or check2) is False:
+        raise MismatchError("Ride not associated with message participants!")
+    
+    cursor.execute("""INSERT INTO inbox VALUES(?, date('now), ?, ?, ?, 'n');""", (to, from_, message, rno))
+    connection.commit()
+    
+    
 def main():
     global connection, cursor
     connect("Delivery_Service.db")
     initTables()
     initInserts()
-    offerRide("jane_doe@abc.ca", '2018-10-31', 3, 1.50, 'No bag', findLoc('berta')[0], findLoc('berta')[1], enroute = ['van1', 'van2'])
-    cursor.execute("SELECT * FROM rides WHERE rno >= (SELECT MAX(rno) FROM rides);")
-    print(cursor.fetchall())
+    
+#    Testing Stuff
+#    offerRide("jane_doe@abc.ca", '2018-10-31', 3, 1.50, 'No bag', findLoc('berta')[0], findLoc('berta')[1], enroute = ['van1', 'van2'])
+#    cursor.execute("SELECT * FROM rides WHERE rno >= (SELECT MAX(rno) FROM rides);")
+#    print(cursor.fetchall())
+    
+#    r = rideSearchFromKeyword(("berta", "all"))
+#    for thing in r:
+#        print(thing)
+    
     
 #    print(findLoc('MEC'))
-    print("Done.")
+    print("\nDone.")
     return
 
 if __name__ == "__main__":
