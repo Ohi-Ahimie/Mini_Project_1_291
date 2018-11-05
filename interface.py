@@ -46,7 +46,10 @@ def offerRide(email):
 
     src = input("Enter source location: ")
     matches = backend.findLoc(src)
-    if len(matches) == 1:
+    if len(matches == 0):
+        input("No matches found, press enter to continue")
+        offerRide(email)
+    elif len(matches) == 1:
         srclcode = matches[0]
     else:
         location = showFive(matches, "lcode, city, prov, address")
@@ -54,7 +57,10 @@ def offerRide(email):
     
     dst = input("Enter destination location: ")
     matches = backend.findLoc(dst)
-    if len(matches) == 1:
+    if len(matches == 0):
+        input("No matches found, press enter to continue")
+        offerRide(email)
+    elif len(matches) == 1:
         dstlcode = matches[0]
     else:
         location = showFive(matches, "lcode, city, prov, address")
@@ -64,10 +70,18 @@ def offerRide(email):
     if cno == "-1":
         cno = None
     enroutes = input("Enter enroute locations, separated by commas: ").split(",")
+
+    enrouteslcode = []
+    for route in enroutes:
+        matches = backend.findLoc(route)
+        location = showFive(matches, "lcode, city, prov, address")
+        lcode = location[0]
+        enrouteslcode.append(lcode)    
+
     if enroutes == ['']: # nothing was entered
-        enroutes = None
+        enrouteslcode = None
     
-    backend.offerRide(email, date, seats, price, lugg, srclcode, dstlcode, enroutes, cno)
+    backend.offerRide(email, date, seats, price, lugg, srclcode, dstlcode, enrouteslcode, cno)
 
 
 def searchRide(email):
