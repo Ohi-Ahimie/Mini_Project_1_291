@@ -449,7 +449,7 @@ def sendMessage(to, from_, message, rno):
     if (check1 or check2) is False:
         raise MismatchError("Ride not associated with message participants!")
     
-    cursor.execute("""INSERT INTO inbox VALUES(?, date('now), ?, ?, ?, 'n');""", (to, from_, message, rno))
+    cursor.execute("""INSERT INTO inbox VALUES(?, date('now'), ?, ?, ?, 'n');""", (to, from_, message, rno))
     connection.commit()
 
 # written by Shiv
@@ -526,15 +526,16 @@ def retRequest(email):
     global connection, cursor
 
     cursor.execute("""SELECT rid FROM requests WHERE email = ?;""", (email, ))
+    rid = cursor.fetchone()
 
     return rid
 
 # written by Shiv
-def deleteRequest(email):
+def deleteRequest(rid):
 
     global connection, cursor
 
-    cursor.execute("""DELETE FROM requests WHERE email = ?;""", (email, ))
+    cursor.execute("""DELETE FROM requests WHERE rid = ?;""", (rid, ))
 
     connection.commit()
 

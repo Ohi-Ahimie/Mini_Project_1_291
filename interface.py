@@ -3,12 +3,15 @@ import os
 from getpass import getpass
 from time import sleep
 
-def showFive(fullList):
+# Written by Noah
+
+def showFive(fullList, label):
     start = 0
     end = min(4, len(fullList)-1)
     
     while True:
         os.system('clear')
+        print(label)
         for i, option in enumerate(fullList[start:end+1]):
             print(start+i+1, ": ", option, sep="")
 
@@ -33,30 +36,91 @@ def showFive(fullList):
         
 
 def offerRide():
-    return
-    #print()
-    #date = input("Enter date (YYYY-MM-DD): ")
-    #seats = int(input("Enter the number of seats: "))
-    #price = int(input("Enter the price per seat: "))
-    #lugg = input("Enter the luggage description: ")
-    #source = input("Enter source location: ")
-    #matches = backend.findLoc(source)   
+    # Menu for offering a ride, feature 1 in spec
+
+    os.system('clear')
+    # date = input("Enter date (YYYY-MM-DD): ")
+    # seats = int(input("Enter the number of seats: "))
+    # price = int(input("Enter the price per seat: "))
+    # lugg = input("Enter the luggage description: ")
+    source = input("Enter source location: ")
+    matches = backend.findLoc(source)
 
 
-def searchRide():
-    return
+    if len(matches) == 1:
+        lcode = matches[0]
+    else:
+        lcode = showFive(matches, "")
 
 
-def bookings():
-    return
+
+def searchRide(email):
+    # Menu for searching for a ride and messaging the driver, feature 2 in spec
+
+    os.system('clear')
+
+    keywords = input("Enter 1-3 keywords separated by commas: ").split(",")
+
+    matches = backend.rideSearchFromKeyword(tuple(keywords))
+
+    ride = showFive(matches, "cno, make, model, year, car seats, owner, rno, price, date, offered seats, luggage, src, dst, driver, cno, lcode")
+
+    message = input("Enter message content: ")
+    backend.sendMessage(ride[5], email, message, ride[6])
+
+    input("Message sent, press enter to continue: ")
+    menu(email)
 
 
-def postRequest():
-    return
+def bookings(email):
+    # Booking management menu, feature 3 in spec
+
+    os.system('clear')
+    print("1: List or cancel bookings")
+    print("2: Book a member")
+    choice = input("Make a selection by entering a number: ")
+
+    if choice == "1":
+        os.system('clear')
+        matches = backend.findMatchingBookings(email)
+        for match in matches:
+            print(match)
+    elif choice == "2":
+        os.system('clear')
+        
 
 
-def manageRequests():
-    return
+def postRequest(email):
+    # Menu for posting a request, feature 4 in spec
+
+    os.system('clear')
+
+    date = input("Enter date (YYYY-MM-DD): ")
+    src = input("Enter pickup location code: ")
+    dst = input("Enter destination location code: ")
+    amount = int(input("Enter amount willing to pay per seat: "))
+
+    backend.postRideRequest(date, email, src, dst, amount)
+    menu(email)
+
+
+def manageRequests(email):
+    # Viewing and deleting ride requests, feature 5 in spec
+
+    os.system('clear')
+    print("1: List all your ride requests")
+    print("2: Delete ride request")
+    print("3: Search for ride requests")
+    choice = input("Make a selection by entering a number: ")
+
+    if choice == "1":
+        rides = backend.retRequest(email)
+        showFive(rides, "")
+    elif choice == "2":
+        rides = backend.retRequest(email)
+        ride = showFive(rides, "")
+        backend.deleteRequest(ride)       
+                
 
 
 def menu(email):
@@ -86,13 +150,13 @@ def menu(email):
     if choice == "1":
         offerRide()
     elif choice == "2":
-        searchRide()
+        searchRide(email)
     elif choice == "3":
-        bookings()
+        bookings(email)
     elif choice == "4":
-        postRequest()
+        postRequest(email)
     elif choice == "5":
-        manageRequests()
+        manageRequests(email)
     elif choice == "6":
         loginScreen()
     else:
@@ -148,4 +212,8 @@ backend.main() # initialize cursor and connection
 #print(backend.addMember("foo@bar.baz", "foobar", "123-456-7890", "foopass"))
 #print(backend.addMember('don@mayor.yeg', 'Don Iveson', '780-382-8239', 'dpass'))
 
-loginScreen()
+#offerRide()
+#searchRide("don@mayor.yeg")
+#postRequest("don@mayor.yeg")
+
+#loginScreen()
