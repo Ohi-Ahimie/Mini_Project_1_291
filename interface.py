@@ -216,4 +216,4 @@ backend.main() # initialize cursor and connection
 #searchRide("don@mayor.yeg")
 #postRequest("don@mayor.yeg")
 
-#loginScreen()
+loginScreen()

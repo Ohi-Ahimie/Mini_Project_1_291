@@ -363,7 +363,7 @@ def rideSearchFromKeyword(keywords):
 #                          FROM rides r, locations 
 #                          WHERE lcode = r.src OR lcode = r.dst OR lcode IN(SELECT lcode 
 #                                                                            FROM enroute
-#                                                                            WHERE enroute.rno = r.rno); """)
+#                                                                           WHERE enroute.rno = r.rno); """)
 
         cursor.execute("""SELECT *
                         FROM rides, locations
