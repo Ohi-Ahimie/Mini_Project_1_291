@@ -458,7 +458,7 @@ def postRideRequest(rdate, email, pickup, dropoff, amount):
     global connection, cursor
 
     cursor.execute("""SELECT MAX(rid) FROM requests;""")
-    rid = cursor.fetchone
+    rid = cursor.fetchone()
 
     # handles unique rid
     if rid is None:
@@ -470,7 +470,34 @@ def postRideRequest(rdate, email, pickup, dropoff, amount):
     cursor.execute("""INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?);""", (rid, email, rdate, pickup, dropoff, amount))
 
     connection.commit()
-    
+
+# written by Shiv
+def retRequest(email):
+
+    global connection, cursor
+
+    cursor.execute("""SELECT rid FROM requests WHERE email = ?;""", (email, ))
+
+    return rid
+
+# written by Shiv
+def deleteRequest(email):
+
+    global connection, cursor
+
+    cursor.execute("""DELETE FROM requests WHERE email = ?;""", (email, ))
+
+    connection.commit()
+
+# written by Shiv
+def retLocation(pickup):
+
+    global connection, cursor
+
+    cursor.execute("""SELECT rid FROM requests WHERE pickup = ?""", (pickup, ))
+
+    return rid
+
 def main():
     global connection, cursor
     connect("Delivery_Service.db")
