@@ -50,7 +50,7 @@ def offerRide(email):
         input("No matches found, press enter to continue")
         offerRide(email)
     elif len(matches) == 1:
-        srclcode = matches[0]
+        srclcode = matches[0][0]
     else:
         location = showFive(matches, "lcode, city, prov, address")
         srclcode = location[0]
@@ -61,7 +61,7 @@ def offerRide(email):
         input("No matches found, press enter to continue")
         offerRide(email)
     elif len(matches) == 1:
-        dstlcode = matches[0]
+        dstlcode = matches[0][0]
     else:
         location = showFive(matches, "lcode, city, prov, address")
         dstlcode = location[0]
@@ -69,17 +69,17 @@ def offerRide(email):
     cno = input("Enter car number, or -1 if none: ")
     if cno == "-1":
         cno = None
-    enroutes = input("Enter enroute locations, separated by commas: ").split(",")
+    enroutes = input("Enter enroute locations, separated by commas, or -1 for none: ").split(",")
 
-    enrouteslcode = []
-    for route in enroutes:
-        matches = backend.findLoc(route)
-        location = showFive(matches, "lcode, city, prov, address")
-        lcode = location[0]
-        enrouteslcode.append(lcode)    
-
-    if enroutes == ['']: # nothing was entered
+    if enroutes[0] == "-1":
         enrouteslcode = None
+    else:
+        enrouteslcode = []
+        for route in enroutes:
+            matches = backend.findLoc(route)
+            location = showFive(matches, "lcode, city, prov, address")
+            lcode = location[0]
+            enrouteslcode.append(lcode)    
     
     backend.offerRide(email, date, seats, price, lugg, srclcode, dstlcode, enrouteslcode, cno)
 
