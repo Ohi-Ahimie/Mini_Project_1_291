@@ -389,6 +389,17 @@ def rideSearchFromKeyword(keywords):
         
     return list(finalSet)
 
+def findMatchingRides(member):
+    #    written by ohiwere, Noah
+    global connection, cursor
+    
+#   rides(rno, price, rdate, seats, lugDesc, src, dst, driver, cno)
+    cursor.execute("""SELECT * 
+                    FROM rides
+                    WHERE driver = ?;""", (member,))
+    
+    return cursor.fetchall()
+
 def findMatchingBookings(member):
 #    written by ohiwere
     global connection, cursor
@@ -415,8 +426,13 @@ def issueBooking(email, rno, cost, seats, pickup, dropoff):
     global connection, cursor
 #    |bno|email|rno|cost|seats|pickup|dropoff|
 
+    cursor.execute("""SELECT seats FROM rides WHERE rno = ?""", (rno, ))
+    availableSeats = cursor.fetchone()
+    if int(seats) > availableSeats[0]:
+        choice = input("Booked seats exceeds available seats, proceed? (y/n): ")
+        if choice == "n": return
+
     cursor.execute("""SELECT MAX(bno) FROM bookings;""")
-    
     bno = cursor.fetchone()
     
     if bno is None:

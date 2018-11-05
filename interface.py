@@ -114,10 +114,23 @@ def bookings(email):
             booking = showFive(matches, "|booking number|email|ride number|cost|seats|pickup|dropoff|")
 
             backend.deleteBooking(booking[0])
-            message = "Your booking from", booking[5], "to", booking[6], "has been cancelled"
-            backend.sendMessage(booking[2], email, message, booking[2])
+            message = "Your booking from " + str(booking[5]) + " to " + str(booking[6]) + " has been cancelled"
+            backend.sendMessage(booking[1], email, message, booking[2])
 
-        
+        elif choice == "3":
+            os.system('clear')
+
+            matches = backend.findMatchingRides(email)
+
+            ride = showFive(matches, "rno, price, rdate, seats, lugDesc, src, dst, driver, cno")
+
+            bookedEmail = input("Enter the email of the member to book: ")
+            seatsBooked = input("Enter the number of seats to book: ")
+            seatCost = input("Enter cost per seat: ")
+            pickup = input("Enter pickup location code: ")
+            dropoff = input("Enter dropoff location code: ")
+
+            backend.issueBooking(bookedEmail, ride[0], seatCost, seatsBooked, pickup, dropoff)
 
         elif choice == "4":
             menu(email)
@@ -279,7 +292,7 @@ backend.main() # initialize cursor and connection
 #offerRide()
 #searchRide("don@mayor.yeg")
 #postRequest("don@mayor.yeg")
-menu("don@mayor.yeg")
+#menu("don@mayor.yeg")
 
 
 loginScreen()
