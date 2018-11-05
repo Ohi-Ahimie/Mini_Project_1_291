@@ -453,7 +453,9 @@ def sendMessage(to, from_, message, rno):
     connection.commit()
 
 def getOfferedRides(member):
-    pass
+    # written by ohiwere
+    global connection, cursor
+    
 
 # written by Shiv
 def postRideRequest(rdate, email, pickup, dropoff, amount):
