@@ -35,23 +35,39 @@ def showFive(fullList, label):
             return(fullList[choice-1])
         
 
-def offerRide():
+def offerRide(email):
     # Menu for offering a ride, feature 1 in spec
 
     os.system('clear')
-    # date = input("Enter date (YYYY-MM-DD): ")
-    # seats = int(input("Enter the number of seats: "))
-    # price = int(input("Enter the price per seat: "))
-    # lugg = input("Enter the luggage description: ")
-    source = input("Enter source location: ")
-    matches = backend.findLoc(source)
+    date = input("Enter date (YYYY-MM-DD): ")
+    seats = int(input("Enter the number of seats: "))
+    price = int(input("Enter the price per seat: "))
+    lugg = input("Enter the luggage description: ")
 
-
+    src = input("Enter source location: ")
+    matches = backend.findLoc(src)
     if len(matches) == 1:
-        lcode = matches[0]
+        srclcode = matches[0]
     else:
-        lcode = showFive(matches, "")
-
+        location = showFive(matches, "lcode, city, prov, address")
+        srclcode = location[0]
+    
+    dst = input("Enter destination location: ")
+    matches = backend.findLoc(dst)
+    if len(matches) == 1:
+        dstlcode = matches[0]
+    else:
+        location = showFive(matches, "lcode, city, prov, address")
+        dstlcode = location[0]
+    
+    cno = input("Enter car number, or -1 if none: ")
+    if cno == "-1":
+        cno = None
+    enroutes = input("Enter enroute locations, separated by commas: ").split(",")
+    if enroutes == ['']: # nothing was entered
+        enroutes = None
+    
+    backend.offerRide(email, date, seats, price, lugg, srclcode, dstlcode, enroutes, cno)
 
 
 def searchRide(email):
@@ -77,19 +93,33 @@ def bookings(email):
 
     while True:
         os.system('clear')
-        print("1: List or cancel bookings")
-        print("2: Book a member")
-        print("3: Return to menu")
+        print("1: List bookings")
+        print("2: Cancel a booking")
+        print("3: Book a member")
+        print("4: Return to menu")
         choice = input("Make a selection by entering a number: ")
 
         if choice == "1":
             os.system('clear')
             matches = backend.findMatchingBookings(email)
+
+            print("|booking number|email|ride number|cost|seats|pickup|dropoff|\n")
             for match in matches:
                 print(match)
+            input("Press enter to continue")
+
         elif choice == "2":
             os.system('clear')
-        elif choice == "3":
+            matches = backend.findMatchingBookings(email)
+            booking = showFive(matches, "|booking number|email|ride number|cost|seats|pickup|dropoff|")
+
+            backend.deleteBooking(booking[0])
+            message = "Your booking from", booking[5], "to", booking[6], "has been cancelled"
+            backend.sendMessage(booking[2], email, message, booking[2])
+
+        
+
+        elif choice == "4":
             menu(email)
         
 
@@ -157,6 +187,8 @@ def manageRequests(email):
 def menu(email):
     while True:
         os.system('clear')
+        print("Logged in as:", email)
+        print()
 
         messages = backend.getUnreadMessages(email)
 
@@ -180,7 +212,7 @@ def menu(email):
         choice = input("Pick an option by entering a number: ")
         
         if choice == "1":
-            offerRide()
+            offerRide(email)
         elif choice == "2":
             searchRide(email)
         elif choice == "3":

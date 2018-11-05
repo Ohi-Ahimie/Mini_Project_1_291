@@ -284,7 +284,7 @@ def initInserts():
     return
 
 
-def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enroute = None, cno = None):
+def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enroute, cno):
     # written by ohiwere
     # create a ride that a member is offering and add it to database
     # assumes all location vars are lcodes
@@ -302,10 +302,12 @@ def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enr
 
     if cno is not None:
         cursor.execute("SELECT cno FROM members, cars WHERE email = ? AND owner = email;", (member,))
-        list = cursor.fetchall() # could potentially own more than one car
+        cars = cursor.fetchall() # could potentially own more than one car
+        print(cars)
         flag = False
-        for l in list:
-            if l[0] is not None and l[0] is cno:
+        for car in cars:
+            print(car[0])
+            if car[0] is not None and car[0] == int(cno):
                 flag = True
         if flag is False:
             raise MismatchError("Specified car number didn't match one of yours!")            
@@ -315,6 +317,7 @@ def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enr
                     """, (rno, seatprice, date, seats, luggage_descrip, source, dest, member, cno))
                     
     # now handle enroutes, if any
+    print(enroute)
     if enroute is not None:
         for e in enroute: # expecting e to be list of lcodes
             cursor.execute("INSERT INTO enroute VALUES(?,?);", (rno, e))
@@ -331,12 +334,12 @@ def findLoc(location):
     
     retlist = []
     cursor.execute("SELECT * FROM locations WHERE (lcode = ?);", (location,))
-    list = cursor.fetchall()        
-    for l in list:
+    locs = cursor.fetchall()        
+    for l in locs:
         retlist.append(l)
     cursor.execute("SELECT * FROM locations WHERE (city LIKE ? OR prov LIKE ? OR address LIKE ?);", ('%'+location+'%','%'+location+'%','%'+location+'%'))
-    list = cursor.fetchall()        
-    for l in list:
+    locs = cursor.fetchall()        
+    for l in locs:
         retlist.append(l)    
     
     return retlist
@@ -482,6 +485,9 @@ def checkLogin(email, password):
     cursor.execute("""SELECT pwd FROM members WHERE email = ? """, (email, ))
     storedPwd = cursor.fetchone()
 
+    if storedPwd is None:
+        return False
+
     if storedPwd[0] is None:
         return False
 
@@ -498,7 +504,9 @@ def getUnreadMessages(email):
     cursor.execute("""SELECT content FROM inbox WHERE seen = 'n' AND email = ? """, (email, ))
     messages = cursor.fetchall()
 
-    cursor.execute("""UPDATE inbox SET seen = 'y' """)
+    cursor.execute("""UPDATE inbox SET seen = 'y' WHERE email = ? """, (email, ))
+
+    connection.commit()
 
     return(messages)
 
