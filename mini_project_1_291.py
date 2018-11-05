@@ -430,24 +430,24 @@ def sendMessage(to, from_, message, rno):
     global connection, cursor
     
     # make sure that rno matches a ride offered by either sender or recipient
-    check1 = True
-    cursor.execute("""SELECT driver
-                    FROM rides
-                    WHERE rno = ? AND driver = ?;""", (rno, from_))
-    res = cursor.fetchone()
-    if res is None:
-        check1 = False
-    
-    check2 = True
-    cursor.execute("""SELECT driver
-                    FROM rides
-                    WHERE rno = ? AND driver = ? ;""", (rno, to))
-    res = cursor.fetchone()
-    if res is None:
-        check2 = False
-    
-    if (check1 or check2) is False:
-        raise MismatchError("Ride not associated with message participants!")
+#    check1 = True
+#    cursor.execute("""SELECT driver
+#                    FROM rides
+#                    WHERE rno = ? AND driver = ?;#""", (rno, from_))
+#    res = cursor.fetchone()
+#    if res is None:
+#        check1 = False
+#    
+#    check2 = True
+#    cursor.execute("""SELECT driver
+#                    FROM rides
+#                    WHERE rno = ? AND driver = ? ;#""", (rno, to))
+#    res = cursor.fetchone()
+#    if res is None:
+#        check2 = False
+#    
+#    if (check1 or check2) is False:
+#        raise MismatchError("Ride not associated with message participants!")
     
     cursor.execute("""INSERT INTO inbox VALUES(?, date('now'), ?, ?, ?, 'n');""", (to, from_, message, rno))
     connection.commit()
