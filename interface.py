@@ -46,7 +46,7 @@ def offerRide(email):
 
     src = input("Enter source location: ")
     matches = backend.findLoc(src)
-    if len(matches == 0):
+    if len(matches) == 0:
         input("No matches found, press enter to continue")
         offerRide(email)
     elif len(matches) == 1:
