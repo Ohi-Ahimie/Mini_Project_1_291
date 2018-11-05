@@ -250,4 +250,4 @@ backend.main() # initialize cursor and connection
 menu("don@mayor.yeg")
 
 
-#loginScreen()
+loginScreen()
