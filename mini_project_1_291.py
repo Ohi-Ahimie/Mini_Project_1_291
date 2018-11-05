@@ -456,7 +456,13 @@ def getOfferedRides(member):
     # written by ohiwere
     global connection, cursor
     
-
+    cursor.execute(""" SELECT *
+                    FROM rides
+                    WHERE driver = ?
+                    """, (member,))
+    
+    return cursor.fetchall()
+    
 # written by Shiv
 def postRideRequest(rdate, email, pickup, dropoff, amount):
 
@@ -553,6 +559,7 @@ def retLocation(pickup):
 
     return rid
 
+# add custom dbfile functionality to main! 
 def main():
     global connection, cursor
     connect("Delivery_Service.db")
@@ -570,6 +577,10 @@ def main():
     
     
 #    print(findLoc('MEC'))
+#
+#    for obj in getOfferedRides('the99@oil.com'):
+#        print(obj)
+#    
     print("\nDone.")
     return
 
