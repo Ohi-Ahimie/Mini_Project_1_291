@@ -8,6 +8,7 @@ __date__ = "$Oct 25, 2018 3:26:05 PM$"
 import sqlite3
 import time
 import hashlib
+import re
 
 connection = None
 cursor = None
@@ -283,11 +284,17 @@ def initInserts():
     connection.commit()
     return
 
+def checkInjectionAttack(params):
+    for param in params:
+        if  not re.match("^[A-Za-z0-9_]*$", param):
+            quit()
 
 def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enroute, cno):
     # written by ohiwere
     # create a ride that a member is offering and add it to database
     # assumes all location vars are lcodes
+    checkInjectionAttack([member, date, seats, seatprice, luggage_descrip, source, dest, enroute, cno])
+
     global connection, cursor
     
     # generate new ride number
@@ -330,6 +337,8 @@ def findLoc(location):
     # written by ohiwere
     # get a string that could be lcode or a substring of city, address, or province. Call before offerRide to get src,dest
     # in both cases, will return a list, but if location is an lcode, there will only be 1 item
+    checkInjectionAttack([location])
+
     global connection, cursor
     
     retlist = []
@@ -346,6 +355,8 @@ def findLoc(location):
 
 def rideSearchFromKeyword(keywords):
     # keywords is a tuple
+    checkInjectionAttack([keywords])
+
     global connection, cursor
     
     potentialMatches = []
@@ -391,6 +402,8 @@ def rideSearchFromKeyword(keywords):
 
 def findMatchingRides(member):
     #    written by ohiwere, Noah
+    checkInjectionAttack(member)
+
     global connection, cursor
     
 #   rides(rno, price, rdate, seats, lugDesc, src, dst, driver, cno)
@@ -402,6 +415,7 @@ def findMatchingRides(member):
 
 def findMatchingBookings(member):
 #    written by ohiwere
+    checkInjectionAttack([member])
     global connection, cursor
     
 #    |bno|email|rno|cost|seats|pickup|dropoff|
@@ -413,6 +427,7 @@ def findMatchingBookings(member):
 
 def deleteBooking(bno):
 #    written by ohiwere
+    checkInjectionAttack(bno)
     global connection, cursor
     
     cursor.execute(""" DELETE FROM bookings 
@@ -423,6 +438,7 @@ def deleteBooking(bno):
 
 def issueBooking(email, rno, cost, seats, pickup, dropoff):
 #    written by ohiwere
+    checkInjectionAttack([email, rno, cost, seats, pickup, dropoff])
     global connection, cursor
 #    |bno|email|rno|cost|seats|pickup|dropoff|
 
@@ -447,6 +463,8 @@ def issueBooking(email, rno, cost, seats, pickup, dropoff):
 def sendMessage(to, from_, message, rno):
     # written by ohiwere
     global connection, cursor
+
+    checkInjectionAttack([to, from_, message, rno])
     
     # make sure that rno matches a ride offered by either sender or recipient
     # check1 = True
@@ -473,6 +491,7 @@ def sendMessage(to, from_, message, rno):
 
 # written by Shiv
 def postRideRequest(rdate, email, pickup, dropoff, amount):
+    checkInjectionAttack([rdate, email, pickup, dropoff, amount])
 
     global connection, cursor
 
@@ -496,6 +515,8 @@ def checkLogin(email, password):
     # checks if a username and password pair is valid. 
     # Returns True if valid, False if not
 
+    checkInjectionAttack([email, password])
+
     global connection, cursor
 
     cursor.execute("""SELECT pwd FROM members WHERE email = ? """, (email, ))
@@ -514,6 +535,7 @@ def getUnreadMessages(email):
     # written by Noah
     # Returns a list of the contents of all unread messages for a given user
     # Sets messages to read
+    checkInjectionAttack([email])
 
     global connection, cursor
 
@@ -531,6 +553,7 @@ def addMember(email, name, phone, password):
     # written by Noah
     # Adds a new member if the email is unique
     # Returns True if successful, False if not
+    checkInjectionAttack([email, name, phone, password])
 
     global connection, cursor
 
@@ -546,6 +569,7 @@ def addMember(email, name, phone, password):
 
 # written by Shiv
 def retRequest(email):
+    checkInjectionAttack([email])
 
     global connection, cursor
 
@@ -556,6 +580,7 @@ def retRequest(email):
 
 # written by Shiv
 def deleteRequest(rid):
+    checkInjectionAttack([rid])
 
     global connection, cursor
 
@@ -565,6 +590,7 @@ def deleteRequest(rid):
 
 # written by Shiv
 def retLocation(keyword):
+    checkInjectionAttack([keyword])
 
     global connection, cursor
 
