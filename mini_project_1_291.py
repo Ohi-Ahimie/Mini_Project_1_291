@@ -473,7 +473,56 @@ def postRideRequest(rdate, email, pickup, dropoff, amount):
     cursor.execute("""INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?);""", (rid, email, rdate, pickup, dropoff, amount))
 
     connection.commit()
-    
+
+
+def checkLogin(email, password):
+    # written by Noah
+    # checks if a username and password pair is valid. 
+    # Returns True if valid, False if not
+
+    global connection, cursor
+
+    cursor.execute("""SELECT pwd FROM members WHERE email = ? """, (email, ))
+    storedPwd = cursor.fetchone()
+
+    if storedPwd[0] is None:
+        return False
+
+    return (password == storedPwd[0])
+
+
+def getUnreadMessages(email):
+    # written by Noah
+    # Returns a list of the contents of all unread messages for a given user
+    # Sets messages to read
+
+    global connection, cursor
+
+    cursor.execute("""SELECT content FROM inbox WHERE seen = 'n' AND email = ? """, (email, ))
+    messages = cursor.fetchall()
+
+    cursor.execute("""UPDATE inbox SET seen = 'y' """)
+
+    return(messages)
+
+
+def addMember(email, name, phone, password):
+    # written by Noah
+    # Adds a new member if the email is unique
+    # Returns True if successful, False if not
+
+    global connection, cursor
+
+    cursor.execute("""SELECT email FROM members WHERE email = ?""", (email, ))
+    existingEmail = cursor.fetchall()
+
+    if existingEmail == []: 
+        cursor.execute("""INSERT INTO members VALUES(?, ?, ?, ?)""", (email, name, phone, password))
+        connection.commit()
+        return True
+    else:
+        return False
+
 def main():
     global connection, cursor
     connect("Delivery_Service.db")
