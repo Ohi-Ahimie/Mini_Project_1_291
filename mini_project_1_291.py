@@ -452,6 +452,9 @@ def sendMessage(to, from_, message, rno):
     cursor.execute("""INSERT INTO inbox VALUES(?, date('now'), ?, ?, ?, 'n');""", (to, from_, message, rno))
     connection.commit()
 
+def getOfferedRides(member):
+    pass
+
 # written by Shiv
 def postRideRequest(rdate, email, pickup, dropoff, amount):
 
