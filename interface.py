@@ -75,18 +75,22 @@ def searchRide(email):
 def bookings(email):
     # Booking management menu, feature 3 in spec
 
-    os.system('clear')
-    print("1: List or cancel bookings")
-    print("2: Book a member")
-    choice = input("Make a selection by entering a number: ")
+    while True:
+        os.system('clear')
+        print("1: List or cancel bookings")
+        print("2: Book a member")
+        print("3: Return to menu")
+        choice = input("Make a selection by entering a number: ")
 
-    if choice == "1":
-        os.system('clear')
-        matches = backend.findMatchingBookings(email)
-        for match in matches:
-            print(match)
-    elif choice == "2":
-        os.system('clear')
+        if choice == "1":
+            os.system('clear')
+            matches = backend.findMatchingBookings(email)
+            for match in matches:
+                print(match)
+        elif choice == "2":
+            os.system('clear')
+        elif choice == "3":
+            menu(email)
         
 
 
@@ -106,62 +110,90 @@ def postRequest(email):
 
 def manageRequests(email):
     # Viewing and deleting ride requests, feature 5 in spec
+    while True:
+        os.system('clear')
+        print("1: List all your ride requests")
+        print("2: Delete ride request")
+        print("3: Search for ride requests and message the reqesting member")
+        print("4: Return to menu")
+        choice = input("Make a selection by entering a number: ")
 
-    os.system('clear')
-    print("1: List all your ride requests")
-    print("2: Delete ride request")
-    print("3: Search for ride requests")
-    choice = input("Make a selection by entering a number: ")
+        if choice == "1":
+            requests = backend.retRequest(email)
+            
+            if len(requests) == 0:
+                input("\nNo requests to show, press enter to continue")
+                manageRequests(email)
 
-    if choice == "1":
-        rides = backend.retRequest(email)
-        showFive(rides, "")
-    elif choice == "2":
-        rides = backend.retRequest(email)
-        ride = showFive(rides, "")
-        backend.deleteRequest(ride)       
-                
+            showFive(requests, "rid, email, pickup, dropoff, date, amount")
+        elif choice == "2":
+            requests = backend.retRequest(email)
 
+            if len(requests) == 0:
+                input("\nNo requests to show, press enter to continue")
+                manageRequests(email)
+
+            request = showFive(requests, "rid, email, pickup, dropoff, rdate, amount")
+            backend.deleteRequest(request[0])
+
+        elif choice == "3":
+            keyword = input("Enter lcode or pickup city: ")
+            requests = backend.retLocation(keyword)
+
+            if len(requests) == 0:
+                input("\nNo requests to show, press enter to continue")
+                manageRequests(email)
+
+            request = showFive(requests, "rid, email, pickup, dropoff, rdate, amount")
+
+            message = input("Enter message content: ")
+            backend.sendMessage(request[1], email, message, int(request[0]))         
+            print("Message sent, press enter to continue")
+
+            menu(email)
+        elif choice == "4":
+            menu(email)
 
 def menu(email):
-    os.system('clear')
+    while True:
+        os.system('clear')
 
-    messages = backend.getUnreadMessages(email)
+        messages = backend.getUnreadMessages(email)
 
-    if len(messages) > 0:
-        print("--------------------")
-        print("Unseen Messages:\n")
+        if len(messages) > 0:
+            print("--------------------")
+            print("Unseen Messages:\n")
 
-        for message in messages:
-            print(message[0])
-        print("--------------------")
-        print("\n")
+            for message in messages:
+                print(message[0])
+            print("--------------------")
+            print("\n")
 
-    print("1: Offer a ride")
-    print("2: Search for rides")
-    print("3: Book members or cancel bookings")
-    print("4: Post a ride request")
-    print("5: Manage ride requests")
-    print("6: Logout")
-    print()
-    
-    choice = input("Pick an option by entering a number: ")
-    
-    if choice == "1":
-        offerRide()
-    elif choice == "2":
-        searchRide(email)
-    elif choice == "3":
-        bookings(email)
-    elif choice == "4":
-        postRequest(email)
-    elif choice == "5":
-        manageRequests(email)
-    elif choice == "6":
-        loginScreen()
-    else:
-        print("\n Incorrect choice, try again")
-        menu(email)
+        print("1: Offer a ride")
+        print("2: Search for rides")
+        print("3: Book members or cancel bookings")
+        print("4: Post a ride request")
+        print("5: Manage ride requests")
+        print("6: Logout")
+        print()
+        
+        choice = input("Pick an option by entering a number: ")
+        
+        if choice == "1":
+            offerRide()
+        elif choice == "2":
+            searchRide(email)
+        elif choice == "3":
+            bookings(email)
+        elif choice == "4":
+            postRequest(email)
+        elif choice == "5":
+            manageRequests(email)
+        elif choice == "6":
+            loginScreen()
+        else:
+            print("\n Incorrect choice, try again")
+            menu(email)
 
 
 def loginScreen():
@@ -215,5 +247,7 @@ backend.main() # initialize cursor and connection
 #offerRide()
 #searchRide("don@mayor.yeg")
 #postRequest("don@mayor.yeg")
+menu("don@mayor.yeg")
+
 
 loginScreen()
