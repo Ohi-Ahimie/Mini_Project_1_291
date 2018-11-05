@@ -286,7 +286,7 @@ def initInserts():
 
 def checkInjectionAttack(params):
     for param in params:
-        if  not re.match("^[A-Za-z0-9_]*$", param):
+        if not re.match("^[A-Za-z0-9_@.-]*$", param):
             quit()
 
 def offerRide(member, date, seats, seatprice, luggage_descrip, source, dest, enroute, cno):
