@@ -330,14 +330,14 @@ def findLoc(location):
     global connection, cursor
     
     retlist = []
-    cursor.execute("SELECT lcode FROM locations WHERE (lcode = ?);", (location,))
+    cursor.execute("SELECT * FROM locations WHERE (lcode = ?);", (location,))
     list = cursor.fetchall()        
     for l in list:
-        retlist.append(l[0])
-    cursor.execute("SELECT lcode FROM locations WHERE (city LIKE ? OR prov LIKE ? OR address LIKE ?);", ('%'+location+'%','%'+location+'%','%'+location+'%'))
+        retlist.append(l)
+    cursor.execute("SELECT * FROM locations WHERE (city LIKE ? OR prov LIKE ? OR address LIKE ?);", ('%'+location+'%','%'+location+'%','%'+location+'%'))
     list = cursor.fetchall()        
     for l in list:
-        retlist.append(l[0])    
+        retlist.append(l)    
     
     return retlist
 
