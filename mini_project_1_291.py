@@ -525,10 +525,10 @@ def retRequest(email):
 
     global connection, cursor
 
-    cursor.execute("""SELECT rid FROM requests WHERE email = ?;""", (email, ))
-    rid = cursor.fetchone()
+    cursor.execute("""SELECT rid, email, pickup, dropoff, rdate, amount FROM requests WHERE email = ?;""", (email, ))
+    requests = cursor.fetchall()
 
-    return rid
+    return requests
 
 # written by Shiv
 def deleteRequest(rid):
@@ -540,13 +540,16 @@ def deleteRequest(rid):
     connection.commit()
 
 # written by Shiv
-def retLocation(pickup):
+def retLocation(keyword):
 
     global connection, cursor
 
-    cursor.execute("""SELECT rid FROM requests WHERE pickup = ?""", (pickup, ))
+    cursor.execute("""SELECT r.rid, r.email, r.pickup, r.dropoff, r.rdate, r.amount 
+                    FROM requests r JOIN locations l ON l.lcode = r.pickup
+                    WHERE r.pickup = ? OR l.city = ?""", (keyword, keyword))
+    requests = cursor.fetchall()
 
-    return rid
+    return requests
 
 def main():
     global connection, cursor
