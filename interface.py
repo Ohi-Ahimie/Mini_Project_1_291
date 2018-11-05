@@ -57,7 +57,7 @@ def offerRide(email):
     
     dst = input("Enter destination location: ")
     matches = backend.findLoc(dst)
-    if len(matches == 0):
+    if len(matches) == 0:
         input("No matches found, press enter to continue")
         offerRide(email)
     elif len(matches) == 1:
